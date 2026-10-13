@@ -1,0 +1,113 @@
+@import 'tailwindcss';
+
+/*
+ * Token desain. Nilai warna WAJIB sama dengan `src/theme/palette.ts`.
+ * Palet bawaan Tailwind dimatikan agar hanya warna proyek yang bisa dipakai.
+ */
+@theme {
+  --color-*: initial;
+
+  /* Navy */
+  --color-navy-950: #0b1b3a;
+  --color-navy-800: #14285a;
+  --color-navy-600: #2347a8;
+  --color-navy-100: #e3eafb;
+  --color-navy-50: #f1f5fe;
+
+  /* Netral */
+  --color-paper: #f5f7fc;
+  --color-card: #ffffff;
+  --color-white: #ffffff;
+  --color-line: #e2e8f3;
+  --color-muted: #64748b;
+
+  /* Status */
+  --color-success: #16a37a;
+  --color-warning: #e8a317;
+  --color-danger: #d64545;
+
+  --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
+
+  /* Bayangan lembut bernuansa navy (bukan hitam) agar kartu terasa ringan. */
+  --shadow-soft: 0 1px 2px rgb(11 27 58 / 0.04), 0 8px 24px rgb(11 27 58 / 0.06);
+  --shadow-lift: 0 2px 4px rgb(11 27 58 / 0.06), 0 16px 40px rgb(11 27 58 / 0.12);
+
+  /* Animasi CSS ringan: hanya transform & opacity. */
+  --animate-float: float 3.2s ease-in-out infinite;
+  --animate-blink: blink 4.5s ease-in-out infinite;
+  --animate-shadow: shadow 3.2s ease-in-out infinite;
+  --animate-twinkle: twinkle 2.4s ease-in-out infinite;
+
+  /* Bayangan mengecil saat maskot naik (selaras dengan `float`). */
+  @keyframes shadow {
+    0%,
+    100% {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scaleX(0.8);
+      opacity: 0.6;
+    }
+  }
+
+  @keyframes twinkle {
+    0%,
+    100% {
+      transform: scale(0.6);
+      opacity: 0.3;
+    }
+    50% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
+  @keyframes blink {
+    0%,
+    92%,
+    100% {
+      transform: scaleY(1);
+    }
+    95% {
+      transform: scaleY(0.1);
+    }
+  }
+}
+
+@layer base {
+  html {
+    @apply bg-paper text-navy-950 antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply min-h-dvh font-sans;
+    overscroll-behavior-y: none;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-navy-600;
+  }
+}
+
+/* Hormati pengaturan "kurangi gerakan" di perangkat. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

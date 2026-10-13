@@ -1,0 +1,87 @@
+rules_version = '2';
+
+// Aturan keamanan Nia Kasir. Rancangan lengkap: docs/RANCANGAN.md §8.
+// Ditulis bertahap mengikuti tahapan; yang tidak diizinkan di sini otomatis DITOLAK.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function memberPath(storeId) {
+      return /databases/$(database)/documents/stores/$(storeId)/members/$(request.auth.uid);
+    }
+
+    // Anggota aktif toko. Kasir yang dinonaktifkan pemilik langsung kehilangan akses.
+    function isActiveMember(storeId) {
+      return signedIn()
+        && exists(memberPath(storeId))
+        && get(memberPath(storeId)).data.isActive == true;
+    }
+
+    function isOwner(storeId) {
+      return isActiveMember(storeId) && get(memberPath(storeId)).data.role == 'owner';
+    }
+
+    // Sama dengan STORE_NAME_MIN_LENGTH / MAX_LENGTH di src/config/limits.ts.
+    function validStoreName(name) {
+      return name is string && name.size() >= 2 && name.size() <= 40;
+    }
+
+    // Toko yang SEDANG dibuat dalam transaksi yang sama dimiliki akun ini.
+    function ownsStoreAfterWrite(storeId) {
+      return getAfter(/databases/$(database)/documents/stores/$(storeId)).data.ownerUid
+        == request.auth.uid;
+    }
+
+    // ---- users/{uid}: penghubung akun → toko (1 akun = 1 toko) ----
+    match /users/{uid} {
+      allow read: if isSelf(uid);
+
+      // Tahap 1: dibuat bersama toko baru oleh pemiliknya. (Kasir via undangan: Tahap 7.)
+      allow create: if isSelf(uid)
+        && request.resource.data.role == 'owner'
+        && request.resource.data.storeId is string
+        && ownsStoreAfterWrite(request.resource.data.storeId);
+
+      // Tidak bisa pindah toko atau mengubah peran sendiri.
+      allow update, delete: if false;
+    }
+
+    // ---- stores/{storeId} ----
+    match /stores/{storeId} {
+      allow read: if isActiveMember(storeId);
+
+      // Akun yang belum punya toko boleh membuat satu toko dan menjadi pemiliknya.
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && !exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && validStoreName(request.resource.data.name);
+
+      allow update: if isOwner(storeId)
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && validStoreName(request.resource.data.name);
+
+      allow delete: if false;
+
+      // ---- members/{uid}: siapa saja yang boleh mengakses toko ----
+      match /members/{uid} {
+        allow read: if isActiveMember(storeId) && (isSelf(uid) || isOwner(storeId));
+
+        // Anggota pertama = pemilik, ditulis dalam transaksi pembuatan toko.
+        allow create: if isSelf(uid)
+          && request.resource.data.role == 'owner'
+          && request.resource.data.isActive == true
+          && ownsStoreAfterWrite(storeId);
+
+        // Tahap 7: pemilik menambah/menonaktifkan kasir.
+        allow update, delete: if false;
+      }
+    }
+  }
+}

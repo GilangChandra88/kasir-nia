@@ -1,0 +1,26 @@
+# Dependensi & hasil build
+node_modules
+dist
+dev-dist
+coverage
+*.tsbuildinfo
+
+# Editor & sistem
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea
+.DS_Store
+Thumbs.db
+
+# Log
+*.log
+
+# Lingkungan (kunci Firebase ada di .env.local)
+.env
+.env.*
+!.env.example
+
+# Firebase CLI
+.firebase
+*-debug.log

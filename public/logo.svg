@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Warna mengikuti src/theme/palette.ts (navy950, white, navy100, navy600). -->
+  <rect width="512" height="512" rx="112" fill="#0B1B3A"/>
+  <path d="M156 128q0-20 20-20h160q20 0 20 20v264l-25-16-25 16-25-16-25 16-25-16-25 16-25-16-25 16z" fill="#FFFFFF"/>
+  <circle cx="218" cy="206" r="15" fill="#0B1B3A"/>
+  <circle cx="294" cy="206" r="15" fill="#0B1B3A"/>
+  <circle cx="196" cy="246" r="13" fill="#E3EAFB"/>
+  <circle cx="316" cy="246" r="13" fill="#E3EAFB"/>
+  <path d="M230 244q26 26 52 0" fill="none" stroke="#0B1B3A" stroke-width="12" stroke-linecap="round"/>
+  <g fill="#2347A8">
+    <rect x="196" y="296" width="8" height="44" rx="2"/>
+    <rect x="214" y="296" width="14" height="44" rx="2"/>
+    <rect x="238" y="296" width="6" height="44" rx="2"/>
+    <rect x="254" y="296" width="12" height="44" rx="2"/>
+    <rect x="276" y="296" width="6" height="44" rx="2"/>
+    <rect x="292" y="296" width="12" height="44" rx="2"/>
+    <rect x="312" y="296" width="6" height="44" rx="2"/>
+  </g>
+</svg>
