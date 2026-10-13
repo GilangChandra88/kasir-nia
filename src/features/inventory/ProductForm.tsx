@@ -2,6 +2,7 @@ import { Save } from 'lucide-react'
 import { useRef } from 'react'
 
 import { Button } from '@/components/ui/Button'
+import { collectCategories } from '@/domain/inventory'
 import type { Product } from '@/domain/types'
 import { useIsOnline } from '@/lib/useConnectivity'
 
@@ -14,11 +15,18 @@ type ProductFormProps = {
   storeId: string
   /** Null = tambah barang baru. */
   product: Product | null
-  categories: string[]
+  /** Semua barang toko: saran kategori & cek barcode ganda. */
+  products: Product[]
+  initialBarcode?: string
 }
 
-export function ProductForm({ storeId, product, categories }: ProductFormProps) {
-  const { draft, dispatch, errors, submit, pending, error } = useProductForm({ storeId, product })
+export function ProductForm({ storeId, product, products, initialBarcode }: ProductFormProps) {
+  const { draft, dispatch, errors, barcodeTaken, submit, pending, error } = useProductForm({
+    storeId,
+    product,
+    products,
+    initialBarcode,
+  })
   const online = useIsOnline()
   const isNew = product === null
   const formRef = useRef<HTMLFormElement>(null)
@@ -44,7 +52,8 @@ export function ProductForm({ storeId, product, categories }: ProductFormProps) 
         draft={draft}
         dispatch={dispatch}
         errors={errors}
-        categories={categories}
+        barcodeTaken={barcodeTaken}
+        categories={collectCategories(products)}
       />
       <UnitStockSection draft={draft} dispatch={dispatch} errors={errors} isNew={isNew} />
       <VariantEditor draft={draft} dispatch={dispatch} errors={errors} isNew={isNew} />

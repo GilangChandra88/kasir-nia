@@ -1,4 +1,4 @@
-import { type ComponentProps, useId } from 'react'
+import { type ComponentProps, type ReactNode, useId } from 'react'
 
 import { cn } from '@/lib/cn'
 
@@ -10,6 +10,8 @@ export type TextFieldProps = ComponentProps<'input'> & {
   prefix?: string
   /** Teks tetap di kanan isian, mis. satuan "batang". */
   suffix?: string
+  /** Tombol kecil di ujung kanan isian, mis. tombol scan kamera. */
+  action?: ReactNode
 }
 
 export function TextField({
@@ -18,6 +20,7 @@ export function TextField({
   error,
   prefix,
   suffix,
+  action,
   className,
   id,
   ...props
@@ -47,6 +50,7 @@ export function TextField({
           {...props}
         />
         {suffix && <span className="shrink-0 text-sm text-muted">{suffix}</span>}
+        {action && <span className="-mr-2 shrink-0">{action}</span>}
       </div>
       {message && (
         <p id={messageId} className={cn('mt-1.5 text-sm', error ? 'text-danger' : 'text-muted')}>

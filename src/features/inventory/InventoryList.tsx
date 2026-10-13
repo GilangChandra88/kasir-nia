@@ -3,12 +3,13 @@ import * as m from 'motion/react-m'
 import { useState } from 'react'
 
 import { Chip } from '@/components/ui/Chip'
-import { SearchField } from '@/components/ui/SearchField'
 import { SPRING } from '@/config/motion'
 import { countByFilter, filterProducts, type StockFilter } from '@/domain/inventory'
 import type { Product } from '@/domain/types'
+import { ScanSearchBar } from '@/features/scanner/ScanSearchBar'
 
 import { ProductListItem } from './ProductListItem'
+import { useInventoryScan } from './useInventoryScan'
 
 const FILTERS: readonly { value: StockFilter; label: string }[] = [
   { value: 'all', label: 'Semua' },
@@ -25,17 +26,19 @@ type InventoryListProps = {
 export function InventoryList({ products, lowStockThreshold, editable }: InventoryListProps) {
   const [text, setText] = useState('')
   const [filter, setFilter] = useState<StockFilter>('all')
+  const handleScan = useInventoryScan({ products, editable, onSearch: setText })
 
   const counts = countByFilter(products, lowStockThreshold)
   const visible = filterProducts(products, { text, filter, threshold: lowStockThreshold })
 
   return (
     <div className="flex flex-col gap-3">
-      <SearchField
-        label="Cari barang"
-        placeholder="Cari nama, kategori, atau barcode"
+      <ScanSearchBar
+        placeholder="Cari nama, kategori, barcode"
         value={text}
         onValueChange={setText}
+        onScan={handleScan}
+        scannerTitle="Cari barang lewat barcode"
       />
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
         {FILTERS.map(({ value, label }) => (

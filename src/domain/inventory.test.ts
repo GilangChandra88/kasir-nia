@@ -4,6 +4,7 @@ import {
   collectCategories,
   countByFilter,
   filterProducts,
+  findProductByBarcode,
   formatStock,
   priceRange,
   stockBreakdown,
@@ -105,5 +106,16 @@ describe('filterProducts', () => {
 
   it('menghitung jumlah per filter dari barang aktif saja', () => {
     expect(countByFilter(all, 5)).toEqual({ all: 3, low: 1, out: 1 })
+  })
+})
+
+describe('findProductByBarcode', () => {
+  it('menemukan barang aktif pemilik barcode', () => {
+    expect(findProductByBarcode([rokok], '8991')?.id).toBe('r')
+  })
+
+  it('mengabaikan barang nonaktif dan barcode kosong', () => {
+    expect(findProductByBarcode([{ ...rokok, isActive: false }], '8991')).toBeNull()
+    expect(findProductByBarcode([product({ barcode: null })], '')).toBeNull()
   })
 })

@@ -37,6 +37,17 @@
   --animate-blink: blink 4.5s ease-in-out infinite;
   --animate-shadow: shadow 3.2s ease-in-out infinite;
   --animate-twinkle: twinkle 2.4s ease-in-out infinite;
+  --animate-scan-line: scan-line 1.6s ease-in-out infinite alternate;
+
+  /* Garis pindai naik-turun di dalam bingkai scanner (tinggi bingkai 11rem). */
+  @keyframes scan-line {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(9.5rem);
+    }
+  }
 
   /* Bayangan mengecil saat maskot naik (selaras dengan `float`). */
   @keyframes shadow {
@@ -83,6 +94,11 @@
       transform: scaleY(0.1);
     }
   }
+}
+
+/* Latar redup di luar bingkai scanner (bayangan raksasa di sekeliling bingkai). */
+@utility scan-mask {
+  box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--color-navy-950) 60%, transparent);
 }
 
 /* Posisi menempel tepat di atas navbar bawah (lihat `--nav-h` di AppShell). */

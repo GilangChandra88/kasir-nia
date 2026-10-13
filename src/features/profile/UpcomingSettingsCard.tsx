@@ -1,4 +1,4 @@
-import { ReceiptText, SlidersHorizontal, Users } from 'lucide-react'
+import { ReceiptText, Users } from 'lucide-react'
 
 import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
@@ -29,12 +29,6 @@ export function UpcomingSettingsCard({ role }: UpcomingSettingsCardProps) {
           icon={ReceiptText}
           label="Pengaturan struk"
           description="Alamat, telepon, catatan penutup"
-          trailing={soon}
-        />
-        <SettingRow
-          icon={SlidersHorizontal}
-          label="Bunyi & getar scan"
-          description="Atur umpan balik saat scan barcode"
           trailing={soon}
         />
       </div>

@@ -88,3 +88,9 @@ export function countByFilter(products: Product[], threshold: number): Record<St
     out: active.filter((product) => stockStatus(product, threshold) === 'out').length,
   }
 }
+
+/** Barang aktif pemilik barcode ini (untuk scan & cegah barcode ganda), atau null. */
+export function findProductByBarcode(products: Product[], barcode: string): Product | null {
+  if (barcode === '') return null
+  return products.find((product) => product.isActive && product.barcode === barcode) ?? null
+}

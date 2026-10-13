@@ -2,7 +2,6 @@ import { ButtonLink } from '@/components/ui/ButtonLink'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { ROUTES } from '@/config/routes'
-import { collectCategories } from '@/domain/inventory'
 import type { StoreInfo } from '@/domain/types'
 
 import { DeactivateProductButton } from './DeactivateProductButton'
@@ -15,9 +14,16 @@ type ProductFormContentProps = {
   products: ProductsState
   /** Undefined = tambah barang baru. */
   productId: string | undefined
+  /** Barcode awal untuk barang baru (dari scan barcode yang belum terdaftar). */
+  initialBarcode?: string
 }
 
-export function ProductFormContent({ store, products, productId }: ProductFormContentProps) {
+export function ProductFormContent({
+  store,
+  products,
+  productId,
+  initialBarcode,
+}: ProductFormContentProps) {
   if (products.status === 'loading') return <Skeleton className="h-64" />
   if (products.status === 'error') {
     return (
@@ -27,7 +33,6 @@ export function ProductFormContent({ store, products, productId }: ProductFormCo
     )
   }
 
-  const categories = collectCategories(products.products)
   const product =
     productId === undefined ? null : products.products.find((item) => item.id === productId)
 
@@ -56,7 +61,8 @@ export function ProductFormContent({ store, products, productId }: ProductFormCo
         key={product?.id ?? 'baru'}
         storeId={store.id}
         product={product}
-        categories={categories}
+        products={products.products}
+        initialBarcode={initialBarcode}
       />
       {product && <DeactivateProductButton storeId={store.id} product={product} />}
     </div>

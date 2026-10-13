@@ -17,6 +17,10 @@ describe('emptyDraft', () => {
     expect(base.variants).toEqual([{ id: 'v1', label: '1 pcs', price: null, baseQty: 1 }])
     expect(base.trackStock).toBe(true)
   })
+
+  it('bisa langsung berisi barcode hasil scan', () => {
+    expect(emptyDraft('v1', '8991234').barcode).toBe('8991234')
+  })
 })
 
 describe('draftFromProduct', () => {

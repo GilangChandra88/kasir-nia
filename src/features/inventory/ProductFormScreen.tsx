@@ -1,4 +1,4 @@
-import { Navigate, useParams } from 'react-router'
+import { Navigate, useParams, useSearchParams } from 'react-router'
 
 import { PageHeader } from '@/components/layout/PageHeader'
 import { ROUTES } from '@/config/routes'
@@ -11,6 +11,7 @@ import { useProducts } from './useProducts'
 /** Halaman tambah (`/stok/baru`) dan ubah (`/stok/:productId`) barang. Khusus pemilik. */
 export function ProductFormScreen() {
   const { productId } = useParams()
+  const [searchParams] = useSearchParams()
   const { profile, store } = useReadySession()
   const products = useProducts(store.id)
 
@@ -23,7 +24,12 @@ export function ProductFormScreen() {
         subtitle="Stok Barang"
         backTo={ROUTES.inventory}
       />
-      <ProductFormContent store={store} products={products} productId={productId} />
+      <ProductFormContent
+        store={store}
+        products={products}
+        productId={productId}
+        initialBarcode={searchParams.get('barcode') ?? undefined}
+      />
     </>
   )
 }

@@ -5,6 +5,7 @@ import { fadeUpItem, staggerContainer } from '@/components/motion/variants'
 import { useReadySession } from '@/features/auth/useReadySession'
 
 import { AccountCard } from './AccountCard'
+import { ScanFeedbackCard } from './ScanFeedbackCard'
 import { SignOutButton } from './SignOutButton'
 import { StoreCard } from './StoreCard'
 import { UpcomingSettingsCard } from './UpcomingSettingsCard'
@@ -26,6 +27,9 @@ export function ProfileScreen() {
         </m.div>
         <m.div variants={fadeUpItem}>
           <StoreCard store={store} />
+        </m.div>
+        <m.div variants={fadeUpItem}>
+          <ScanFeedbackCard />
         </m.div>
         <m.div variants={fadeUpItem}>
           <UpcomingSettingsCard role={profile.role} />

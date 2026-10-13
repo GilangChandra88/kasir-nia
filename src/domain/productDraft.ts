@@ -63,12 +63,13 @@ export const VARIANT_TEMPLATES: Record<
 
 const DEFAULT_BASE_UNIT = 'pcs'
 
-export function emptyDraft(firstVariantId: string): ProductDraft {
+/** Draf barang baru. `barcode` terisi bila datang dari scan barcode yang belum terdaftar. */
+export function emptyDraft(firstVariantId: string, barcode = ''): ProductDraft {
   return {
     name: '',
     category: '',
     baseUnit: DEFAULT_BASE_UNIT,
-    barcode: '',
+    barcode,
     trackStock: true,
     initialStock: null,
     variants: [{ id: firstVariantId, label: `1 ${DEFAULT_BASE_UNIT}`, price: null, baseQty: 1 }],
