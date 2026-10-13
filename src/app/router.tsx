@@ -1,6 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router'
 
-import { AppShell } from '@/components/layout/AppShell'
 import { ROUTES } from '@/config/routes'
 import { CheckoutPage } from '@/pages/CheckoutPage'
 import { CreateStorePage } from '@/pages/CreateStorePage'
@@ -10,7 +9,7 @@ import { LoginPage } from '@/pages/LoginPage'
 import { ProductFormPage } from '@/pages/ProductFormPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 
-import { NAV_ITEMS } from './navigation'
+import { AppLayout } from './AppLayout'
 import { SessionGate } from './SessionGate'
 
 export const router = createBrowserRouter([
@@ -26,7 +25,7 @@ export const router = createBrowserRouter([
     element: <SessionGate allow="ready" />,
     children: [
       {
-        element: <AppShell navItems={NAV_ITEMS} />,
+        element: <AppLayout />,
         children: [
           { index: true, element: <Navigate to={ROUTES.checkout} replace /> },
           { path: ROUTES.checkout, element: <CheckoutPage /> },

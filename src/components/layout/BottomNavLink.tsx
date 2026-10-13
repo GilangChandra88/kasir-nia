@@ -9,7 +9,7 @@ type BottomNavLinkProps = {
   item: NavItem
 }
 
-export function BottomNavLink({ item: { to, label, icon: Icon } }: BottomNavLinkProps) {
+export function BottomNavLink({ item: { to, label, icon: Icon, badge = 0 } }: BottomNavLinkProps) {
   return (
     <NavLink
       to={to}
@@ -35,6 +35,15 @@ export function BottomNavLink({ item: { to, label, icon: Icon } }: BottomNavLink
             >
               <Icon className="size-6" strokeWidth={isActive ? 2.4 : 2} aria-hidden="true" />
             </m.span>
+            {badge > 0 && (
+              <span
+                key={badge}
+                className="absolute -top-1 right-1 grid h-5 min-w-5 animate-pop place-items-center rounded-full bg-danger px-1 text-[0.6875rem] font-bold text-white tabular-nums"
+                aria-label={`${badge} barang di keranjang`}
+              >
+                {badge > 99 ? '99+' : badge}
+              </span>
+            )}
           </span>
           {label}
         </>

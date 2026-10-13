@@ -30,3 +30,12 @@ export const MAX_BASE_QTY = 10_000
 
 /** Stok tertinggi per barang (satuan dasar). */
 export const MAX_STOCK = 10_000_000
+
+/** Jumlah maksimal per baris keranjang (mis. 999 batang). */
+export const MAX_LINE_QTY = 999
+
+/** Jumlah baris maksimal dalam satu transaksi. Juga dijaga di firestore.rules. */
+export const MAX_SALE_LINES = 100
+
+/** Barang yang tampil sebagai pilihan cepat di Kasir saat kolom cari kosong. */
+export const QUICK_PICK_LIMIT = 30

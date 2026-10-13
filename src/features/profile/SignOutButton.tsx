@@ -5,10 +5,17 @@ import { Button } from '@/components/ui/Button'
 import { ConfirmSheet } from '@/components/ui/ConfirmSheet'
 import { signOutUser } from '@/data/authRepo'
 import { useAsyncAction } from '@/features/shared/useAsyncAction'
+import { useCartStore } from '@/store/cartStore'
+
+/** Keluar akun sekaligus mengosongkan keranjang di HP ini (HP bisa dipakai bergantian). */
+async function signOutAndClear() {
+  await signOutUser()
+  useCartStore.getState().clearAll()
+}
 
 export function SignOutButton() {
   const [confirming, setConfirming] = useState(false)
-  const { run, pending } = useAsyncAction(signOutUser)
+  const { run, pending } = useAsyncAction(signOutAndClear)
 
   return (
     <>

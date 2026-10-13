@@ -44,6 +44,40 @@ service cloud.firestore {
         && data.variants is list && data.variants.size() >= 1 && data.variants.size() <= 10;
     }
 
+    // Penjualan tunai: milik kasir yang login, uang cukup, kembalian benar, waktu dari server.
+    function validSale(data) {
+      return data.cashierUid == request.auth.uid
+        && data.total is int && data.total >= 0
+        && data.cashReceived is int && data.cashReceived >= data.total
+        && data.change == data.cashReceived - data.total
+        && data.itemCount is int && data.itemCount >= 1
+        && data.items is list && data.items.size() >= 1 && data.items.size() <= 100
+        && data.receiptNo is string
+        && data.createdAt == request.time;
+    }
+
+    // Kasir (atau pemilik) mengurangi stok HANYA bersama penjualannya sendiri di transaksi yang sama.
+    function isSaleStockUpdate(storeId) {
+      let next = request.resource.data;
+      return isActiveMember(storeId)
+        && next.diff(resource.data).affectedKeys().hasOnly(['stock', 'lastSaleId', 'updatedAt'])
+        && next.stock is int && next.stock >= 0 && next.stock < resource.data.stock
+        && getAfter(/databases/$(database)/documents/stores/$(storeId)/sales/$(next.lastSaleId)).data.cashierUid
+          == request.auth.uid;
+    }
+
+    // Rekap harian: dokumen "{tanggal}_{uid}" milik kasir itu sendiri, angkanya hanya bertambah.
+    function validDailyStat(statId) {
+      let next = request.resource.data;
+      return next.cashierUid == request.auth.uid
+        && statId == next.date + '_' + request.auth.uid
+        && next.total is int && next.total >= 0
+        && next.saleCount is int && next.saleCount >= 1
+        && next.itemCount is int && next.itemCount >= 1
+        && (resource == null || (next.total >= resource.data.total
+          && next.saleCount > resource.data.saleCount));
+    }
+
     // Toko yang SEDANG dibuat dalam transaksi yang sama dimiliki akun ini.
     function ownsStoreAfterWrite(storeId) {
       return getAfter(/databases/$(database)/documents/stores/$(storeId)).data.ownerUid
@@ -94,10 +128,28 @@ service cloud.firestore {
         allow update, delete: if false;
       }
 
-      // ---- products/{productId}: hanya pemilik yang mengubah; tidak pernah dihapus ----
+      // ---- products/{productId}: pemilik mengubah; kasir hanya mengurangi stok lewat penjualan ----
       match /products/{productId} {
         allow read: if isActiveMember(storeId);
-        allow create, update: if isOwner(storeId) && validProduct(request.resource.data);
+        allow create: if isOwner(storeId) && validProduct(request.resource.data);
+        allow update: if (isOwner(storeId) && validProduct(request.resource.data))
+          || isSaleStockUpdate(storeId);
+        allow delete: if false;
+      }
+
+      // ---- sales/{saleId}: tambah-saja; kasir hanya membaca penjualannya sendiri ----
+      match /sales/{saleId} {
+        allow read: if isOwner(storeId)
+          || (isActiveMember(storeId) && resource.data.cashierUid == request.auth.uid);
+        allow create: if isActiveMember(storeId) && validSale(request.resource.data);
+        allow update, delete: if false;
+      }
+
+      // ---- dailyStats/{tanggal_uid}: rekap per kasir per hari, hanya bertambah ----
+      match /dailyStats/{statId} {
+        allow read: if isOwner(storeId)
+          || (isActiveMember(storeId) && resource.data.cashierUid == request.auth.uid);
+        allow create, update: if isActiveMember(storeId) && validDailyStat(statId);
         allow delete: if false;
       }
 

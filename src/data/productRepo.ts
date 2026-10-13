@@ -19,7 +19,8 @@ import { runTimedTransaction } from './transaction'
 const barcodeDocSchema = z.object({ productId: z.string().min(1) })
 
 const productsOf = (storeId: string) => collection(db, 'stores', storeId, 'products')
-const productRef = (storeId: string, productId: string) => doc(productsOf(storeId), productId)
+export const productRef = (storeId: string, productId: string) =>
+  doc(productsOf(storeId), productId)
 // Barcode menjadi ID dokumen: Firestore sendiri yang menjamin satu barcode = satu barang.
 const barcodeRef = (storeId: string, barcode: string) =>
   doc(db, 'stores', storeId, 'barcodes', barcode)
@@ -42,7 +43,11 @@ export function watchProducts(
 }
 
 /** Membaca barang di dalam transaksi; galat ramah bila tidak ada. */
-async function readProduct(tx: Transaction, storeId: string, productId: string): Promise<Product> {
+export async function readProduct(
+  tx: Transaction,
+  storeId: string,
+  productId: string,
+): Promise<Product> {
   const snapshot = await tx.get(productRef(storeId, productId))
   const product = snapshot.exists() ? parseProduct(snapshot.id, snapshot.data()) : null
   if (!product) throw new UserFacingError(NOT_FOUND)

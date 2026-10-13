@@ -43,7 +43,7 @@ export function ScanSearchBar({
       <Button
         aria-label="Scan barcode dengan kamera"
         title="Scan barcode"
-        className="w-12 shrink-0 px-0"
+        size="icon"
         onClick={() => {
           unlockAudio()
           setScanning(true)
