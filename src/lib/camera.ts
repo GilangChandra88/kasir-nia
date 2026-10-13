@@ -1,54 +1,74 @@
 import { CAMERA_IDEAL_HEIGHT_PX, CAMERA_IDEAL_WIDTH_PX } from '@/config/scanner'
 
-/** Senter kamera belakang; null bila HP tidak mendukung. */
-export type TorchControl = { set: (on: boolean) => Promise<void> }
+import { type CameraControls, setupCameraControls } from './cameraControls'
+import { pickMainBackCamera } from './cameraSelection'
 
-export type CameraSession = {
-  stop: () => void
-  torch: TorchControl | null
-}
+export type CameraSession = CameraControls & { stop: () => void }
 
-// Kemampuan non-standar (belum ada di tipe DOM TypeScript) yang dipakai Chrome Android.
-type ExtraTrackSettings = { torch?: boolean; focusMode?: string }
+/** Kamera utama yang sudah ditemukan, diingat selama aplikasi terbuka agar tidak mencari ulang. */
+let preferredDeviceId: string | null = null
 
-function hasTorch(track: MediaStreamTrack): boolean {
-  const capabilities: unknown = track.getCapabilities()
-  return typeof capabilities === 'object' && capabilities !== null && 'torch' in capabilities
-}
-
-function torchControl(track: MediaStreamTrack): TorchControl | null {
-  if (!hasTorch(track)) return null
+function videoConstraints(deviceId: string | null): MediaTrackConstraints {
   return {
-    set: async (on) => {
-      const constraint: MediaTrackConstraintSet & ExtraTrackSettings = { torch: on }
-      await track.applyConstraints({ advanced: [constraint] })
-    },
+    ...(deviceId ? { deviceId: { exact: deviceId } } : { facingMode: { ideal: 'environment' } }),
+    width: { ideal: CAMERA_IDEAL_WIDTH_PX },
+    height: { ideal: CAMERA_IDEAL_HEIGHT_PX },
   }
 }
 
-/** Fokus otomatis terus-menerus membantu membaca barcode dari dekat. Diabaikan bila tak didukung. */
-async function enableContinuousFocus(track: MediaStreamTrack): Promise<void> {
-  const constraint: MediaTrackConstraintSet & ExtraTrackSettings = { focusMode: 'continuous' }
-  await track.applyConstraints({ advanced: [constraint] }).catch(() => undefined)
+function request(deviceId: string | null): Promise<MediaStream> {
+  return navigator.mediaDevices.getUserMedia({ audio: false, video: videoConstraints(deviceId) })
+}
+
+function stopStream(stream: MediaStream): void {
+  stream.getTracks().forEach((track) => {
+    track.stop()
+  })
 }
 
 /**
- * Menyalakan kamera belakang ke elemen `<video>`. Wajib HTTPS (atau localhost).
- * Galat dilempar apa adanya; ubah ke pesan ramah dengan `describeCameraError`.
+ * Membuka kamera belakang UTAMA. Chrome Android sering memberi lensa ultra-wide yang buram dari
+ * dekat, jadi setelah izin diberikan (nama kamera baru terbaca), kita pindah ke kamera utama.
+ */
+async function openMainBackCamera(): Promise<MediaStream> {
+  if (preferredDeviceId) {
+    try {
+      return await request(preferredDeviceId)
+    } catch {
+      preferredDeviceId = null
+    }
+  }
+
+  const stream = await request(null)
+  const devices = await navigator.mediaDevices.enumerateDevices()
+  const main = pickMainBackCamera(devices.filter((device) => device.kind === 'videoinput'))
+  const current = stream.getVideoTracks()[0]?.getSettings().deviceId ?? null
+  if (!main || main === current) {
+    preferredDeviceId = current
+    return stream
+  }
+
+  stopStream(stream)
+  try {
+    const better = await request(main)
+    preferredDeviceId = main
+    return better
+  } catch {
+    return request(null)
+  }
+}
+
+const NO_CONTROLS: CameraControls = { torch: null, zoom: null, focusAt: null }
+
+/**
+ * Menyalakan kamera ke elemen `<video>`: kamera utama, fokus otomatis, zoom bawaan.
+ * Wajib HTTPS (atau localhost). Galat dilempar apa adanya; ubah ke pesan ramah dengan
+ * `describeCameraError`.
  */
 export async function startCamera(video: HTMLVideoElement): Promise<CameraSession> {
-  const stream = await navigator.mediaDevices.getUserMedia({
-    audio: false,
-    video: {
-      facingMode: { ideal: 'environment' },
-      width: { ideal: CAMERA_IDEAL_WIDTH_PX },
-      height: { ideal: CAMERA_IDEAL_HEIGHT_PX },
-    },
-  })
+  const stream = await openMainBackCamera()
   const stop = () => {
-    stream.getTracks().forEach((track) => {
-      track.stop()
-    })
+    stopStream(stream)
   }
 
   try {
@@ -60,8 +80,8 @@ export async function startCamera(video: HTMLVideoElement): Promise<CameraSessio
   }
 
   const [track] = stream.getVideoTracks()
-  if (track) await enableContinuousFocus(track)
-  return { stop, torch: track ? torchControl(track) : null }
+  const controls = track ? await setupCameraControls(track) : NO_CONTROLS
+  return { ...controls, stop }
 }
 
 const CAMERA_MESSAGES: Record<string, string> = {

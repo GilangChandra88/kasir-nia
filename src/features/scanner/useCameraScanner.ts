@@ -2,12 +2,8 @@ import { type RefObject, useEffect, useRef, useState } from 'react'
 
 import { SCAN_INTERVAL_MS } from '@/config/scanner'
 import { createBarcodeDetector, type Detector } from '@/lib/barcodeDetector'
-import {
-  type CameraSession,
-  describeCameraError,
-  startCamera,
-  type TorchControl,
-} from '@/lib/camera'
+import { type CameraSession, describeCameraError, startCamera } from '@/lib/camera'
+import type { CameraControls } from '@/lib/cameraControls'
 
 export type ScannerState =
   { status: 'starting' } | { status: 'scanning' } | { status: 'error'; message: string }
@@ -24,7 +20,7 @@ export function useCameraScanner(
   onCode: (code: string) => void,
 ) {
   const [state, setState] = useState<ScannerState>({ status: 'starting' })
-  const [torch, setTorch] = useState<TorchControl | null>(null)
+  const [controls, setControls] = useState<CameraControls | null>(null)
   const onCodeRef = useRef(onCode)
 
   useEffect(() => {
@@ -67,7 +63,7 @@ export function useCameraScanner(
       try {
         const detector = await createBarcodeDetector()
         if (isCancelled()) return
-        setTorch(camera.torch)
+        setControls({ torch: camera.torch, zoom: camera.zoom, focusAt: camera.focusAt })
         setState({ status: 'scanning' })
         void readFrame(detector)
       } catch {
@@ -83,5 +79,5 @@ export function useCameraScanner(
     }
   }, [videoRef])
 
-  return { state, torch }
+  return { state, controls }
 }

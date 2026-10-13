@@ -90,7 +90,10 @@ export function ProductInfoSection({
       <BarcodeScanner
         open={scanning}
         title="Scan barcode barang"
-        onDetect={setBarcode}
+        onDetect={(code) => {
+          setBarcode(code)
+          return undefined
+        }}
         onClose={() => {
           setScanning(false)
         }}

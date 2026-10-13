@@ -1,28 +1,33 @@
-import { X } from 'lucide-react'
 import { useRef } from 'react'
 
-import { IconButton } from '@/components/ui/IconButton'
+import { cn } from '@/lib/cn'
 
+import { FocusTapLayer } from './FocusTapLayer'
+import type { ScanHandler } from './scanFeedback'
 import { ScanFrame } from './ScanFrame'
+import { ScannerHeader } from './ScannerHeader'
 import { ScannerStatus } from './ScannerStatus'
-import { TorchButton } from './TorchButton'
 import { useCameraScanner } from './useCameraScanner'
 import { useScanResult } from './useScanResult'
 
 export type ScannerViewProps = {
   title: string
   continuous: boolean
-  onDetect: (code: string) => void
+  onDetect: ScanHandler
   onClose: () => void
   /** Memasang ulang kamera dari awal (setelah galat). */
   onRetry: () => void
 }
 
-/** Layar kamera penuh: video, bingkai bidik, judul, senter, dan petunjuk. */
+/** Layar kamera penuh: video, bingkai bidik, judul, zoom, senter, ketuk-fokus, dan petunjuk. */
 export function ScannerView({ title, continuous, onDetect, onClose, onRetry }: ScannerViewProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const { handleCode, successCount, lastCode } = useScanResult({ continuous, onDetect, onClose })
-  const { state, torch } = useCameraScanner(videoRef, handleCode)
+  const { handleCode, successCount, lastFeedback } = useScanResult({
+    continuous,
+    onDetect,
+    onClose,
+  })
+  const { state, controls } = useCameraScanner(videoRef, handleCode)
 
   return (
     <div className="relative size-full overflow-hidden">
@@ -33,25 +38,28 @@ export function ScannerView({ title, continuous, onDetect, onClose, onRetry }: S
         muted
         aria-hidden="true"
       />
+      <FocusTapLayer focusAt={controls?.focusAt ?? null} />
 
-      <div className="absolute inset-0 grid place-items-center">
+      <div className="pointer-events-none absolute inset-0 grid place-items-center">
         <ScanFrame successCount={successCount} scanning={state.status === 'scanning'} />
       </div>
 
-      <header className="absolute inset-x-0 top-0 flex items-center justify-between gap-3 p-4 pt-[max(env(safe-area-inset-top),1rem)] text-white">
-        <IconButton icon={X} label="Tutup scanner" tone="light" onClick={onClose} />
-        <h2 className="truncate text-base font-bold">{title}</h2>
-        {torch ? <TorchButton torch={torch} /> : <span className="size-10" aria-hidden="true" />}
-      </header>
+      <ScannerHeader title={title} controls={controls} onClose={onClose} />
 
-      <footer className="absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 p-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] text-center text-white">
-        {continuous && lastCode && (
-          <span className="rounded-full bg-success px-3 py-1 text-sm font-semibold tabular-nums">
-            ✓ {lastCode}
+      <footer className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-3 p-6 pb-[max(env(safe-area-inset-bottom),1.5rem)] text-center text-white">
+        {continuous && lastFeedback && (
+          <span
+            key={successCount}
+            className={cn(
+              'animate-pop rounded-full px-3 py-1 text-sm font-semibold',
+              lastFeedback.tone === 'success' ? 'bg-success' : 'bg-danger',
+            )}
+          >
+            {lastFeedback.tone === 'success' ? '✓' : '!'} {lastFeedback.text}
           </span>
         )}
-        <p className="max-w-64 text-sm text-white/80">
-          Arahkan kamera ke barcode. Jaga jarak ± 15 cm dan pastikan cukup terang.
+        <p className="max-w-72 text-sm text-white/80">
+          Pegang HP ± 20 cm dari barcode. Buram? Jauhkan sedikit atau ketuk layar untuk fokus.
         </p>
       </footer>
 

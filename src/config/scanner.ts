@@ -23,9 +23,18 @@ export const SCAN_DUPLICATE_WINDOW_MS = 1500
 /** Lama bingkai hijau tampil sebelum scanner sekali-pakai menutup (milidetik). */
 export const SCAN_SUCCESS_HOLD_MS = 450
 
-/** Resolusi kamera yang diminta (piksel). Cukup tajam untuk barcode tanpa memberatkan HP. */
-export const CAMERA_IDEAL_WIDTH_PX = 1280
-export const CAMERA_IDEAL_HEIGHT_PX = 720
+/** Resolusi kamera yang diminta (piksel). Full HD agar barcode tetap tajam walau HP agak jauh. */
+export const CAMERA_IDEAL_WIDTH_PX = 1920
+export const CAMERA_IDEAL_HEIGHT_PX = 1080
+
+/**
+ * Zoom bawaan kamera (kali). Dengan zoom 2×, HP bisa dipegang lebih jauh (± 20–25 cm) — di luar
+ * jarak fokus minimum lensa — sementara barcode tetap tampil besar. Ini kunci barcode tidak buram.
+ */
+export const CAMERA_DEFAULT_ZOOM = 2
+
+/** Setelah ketuk-untuk-fokus, kembali ke fokus otomatis terus-menerus setelah jeda ini (milidetik). */
+export const REFOCUS_RESET_MS = 1500
 
 /**
  * Scanner fisik "mengetik" sangat cepat (± 5–30 ms per karakter); manusia jauh lebih lambat.

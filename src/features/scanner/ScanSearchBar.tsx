@@ -6,14 +6,17 @@ import { SearchField } from '@/components/ui/SearchField'
 import { unlockAudio } from '@/lib/feedback'
 
 import { BarcodeScanner } from './BarcodeScanner'
+import type { ScanHandler } from './scanFeedback'
 
 type ScanSearchBarProps = {
   value: string
   onValueChange: (value: string) => void
   placeholder: string
   /** Dipanggil dengan kode hasil scan kamera. */
-  onScan: (code: string) => void
+  onScan: ScanHandler
   scannerTitle?: string
+  /** Scanner tetap terbuka untuk scan berikutnya (Kasir). */
+  continuous?: boolean
 }
 
 /** Kolom cari + tombol scan kamera di sebelahnya (dipakai di Stok dan Kasir). */
@@ -23,6 +26,7 @@ export function ScanSearchBar({
   placeholder,
   onScan,
   scannerTitle,
+  continuous = false,
 }: ScanSearchBarProps) {
   const [scanning, setScanning] = useState(false)
 
@@ -50,6 +54,7 @@ export function ScanSearchBar({
       <BarcodeScanner
         open={scanning}
         title={scannerTitle}
+        continuous={continuous}
         onDetect={onScan}
         onClose={() => {
           setScanning(false)

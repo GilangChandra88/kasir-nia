@@ -23,7 +23,7 @@ export function useInventoryScan({ products, editable, onSearch }: UseInventoryS
   const navigate = useNavigate()
   const showToast = useToastStore((state) => state.show)
 
-  const handleScan = (raw: string) => {
+  const handleScan = (raw: string): undefined => {
     const code = normalizeBarcode(raw)
     const found = findProductByBarcode(products, code)
 

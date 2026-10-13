@@ -38,6 +38,39 @@
   --animate-shadow: shadow 3.2s ease-in-out infinite;
   --animate-twinkle: twinkle 2.4s ease-in-out infinite;
   --animate-scan-line: scan-line 1.6s ease-in-out infinite alternate;
+  --animate-pop: pop 0.3s ease-out;
+  --animate-focus-ring: focus-ring 0.7s ease-out forwards;
+
+  /* "Meletup" kecil untuk umpan balik (pesan scan, angka keranjang). */
+  @keyframes pop {
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    60% {
+      transform: scale(1.06);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  /* Lingkaran fokus saat layar kamera diketuk: mengecil lalu memudar. */
+  @keyframes focus-ring {
+    0% {
+      transform: translate(-50%, -50%) scale(1.4);
+      opacity: 0;
+    }
+    30% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 0;
+    }
+  }
 
   /* Garis pindai naik-turun di dalam bingkai scanner (tinggi bingkai 11rem). */
   @keyframes scan-line {

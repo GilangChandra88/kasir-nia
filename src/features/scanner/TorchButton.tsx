@@ -2,7 +2,7 @@ import { Flashlight, FlashlightOff } from 'lucide-react'
 import { useState } from 'react'
 
 import { IconButton } from '@/components/ui/IconButton'
-import type { TorchControl } from '@/lib/camera'
+import type { TorchControl } from '@/lib/cameraControls'
 
 type TorchButtonProps = {
   torch: TorchControl

@@ -6,10 +6,12 @@ import { acceptScan, type ScanGate } from '@/domain/scan'
 import { playBeep, vibrate } from '@/lib/feedback'
 import { useDevicePrefsStore } from '@/store/devicePrefsStore'
 
+import type { ScanFeedback, ScanHandler } from './scanFeedback'
+
 type UseScanResultOptions = {
   /** `true` = tetap terbuka untuk scan berikutnya (kasir); `false` = tutup setelah satu kode. */
   continuous: boolean
-  onDetect: (code: string) => void
+  onDetect: ScanHandler
   onClose: () => void
 }
 
@@ -23,7 +25,7 @@ export function useScanResult({ continuous, onDetect, onClose }: UseScanResultOp
   const gateRef = useRef<ScanGate>(null)
   const finishedRef = useRef(false)
   const [successCount, setSuccessCount] = useState(0)
-  const [lastCode, setLastCode] = useState<string | null>(null)
+  const [lastFeedback, setLastFeedback] = useState<ScanFeedback | null>(null)
 
   const handleCode = (raw: string) => {
     const code = normalizeBarcode(raw)
@@ -36,10 +38,11 @@ export function useScanResult({ continuous, onDetect, onClose }: UseScanResultOp
     if (scanBeep) playBeep()
     if (scanVibrate) vibrate()
     setSuccessCount((count) => count + 1)
-    setLastCode(code)
 
     if (continuous) {
-      onDetect(code)
+      const feedback = onDetect(code)
+      setLastFeedback(feedback ?? { tone: 'success', text: code })
+      if (feedback?.close) onClose()
       return
     }
     finishedRef.current = true
@@ -49,5 +52,5 @@ export function useScanResult({ continuous, onDetect, onClose }: UseScanResultOp
     }, SCAN_SUCCESS_HOLD_MS)
   }
 
-  return { handleCode, successCount, lastCode }
+  return { handleCode, successCount, lastFeedback }
 }
