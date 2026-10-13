@@ -27,6 +27,7 @@ lucide-react · Firebase · Zustand · Zod · Vitest · ESLint 10 · Prettier 3 
 | `npm run check`        | **Gerbang wajib**: typecheck + lint + cek format + test       |
 | `npm run fix`          | Perbaiki lint otomatis + format semua file                    |
 | `npm run test:watch`   | Test mode pantau                                              |
+| `npm run test:rules`   | Uji `firestore.rules` di emulator (butuh Java 21+)            |
 | `npm run rules:deploy` | Pasang `firestore.rules` ke Firebase (perlu `firebase login`) |
 
 > Kamera (scan barcode) hanya jalan di `localhost` atau HTTPS. Untuk uji di HP sungguhan pakai
@@ -106,7 +107,10 @@ pages → features → components → store/data → domain → lib/config/theme
 
 - Konfigurasi di `.env.local` (`VITE_FIREBASE_*`), tidak masuk Git; contoh di `.env.example`.
 - Data dari Firestore wajib divalidasi Zod (`data/schemas.ts`).
-- Setiap hak akses yang dibatasi di UI **juga** ditegakkan di `firestore.rules` dan diuji dengan emulator.
+- Setiap hak akses yang dibatasi di UI **juga** ditegakkan di `firestore.rules` dan diuji dengan emulator
+  (`rules-tests/`, `npm run test:rules`). Ubah rules → tambah/ubah tesnya dan pastikan lulus.
+- Di Windows, bila emulator galat "Unable to establish loopback connection", set
+  `JAVA_TOOL_OPTIONS=-Djdk.net.unixdomain.tmpdir=C:/Temp` (folder tanpa spasi) sebelum menjalankan.
 - Transaksi penjualan memakai `runTransaction` dan **wajib online**; saat offline tombol simpan dinonaktifkan.
 
 ### 8. TypeScript

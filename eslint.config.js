@@ -51,7 +51,13 @@ export default defineConfig([
   globalIgnores(['dist', 'dev-dist', 'coverage', 'node_modules']),
 
   {
-    files: ['src/**/*.{ts,tsx}', 'vite.config.ts', 'pwa-assets.config.ts'],
+    files: [
+      'src/**/*.{ts,tsx}',
+      'rules-tests/**/*.ts',
+      'vite.config.ts',
+      'vitest.rules.config.ts',
+      'pwa-assets.config.ts',
+    ],
     extends: [
       js.configs.recommended,
       tseslint.configs.strictTypeChecked,
@@ -78,7 +84,7 @@ export default defineConfig([
   },
 
   {
-    files: ['src/**/*.test.{ts,tsx}'],
+    files: ['src/**/*.test.{ts,tsx}', 'rules-tests/**/*.ts'],
     rules: { 'max-lines': 'off' },
   },
 

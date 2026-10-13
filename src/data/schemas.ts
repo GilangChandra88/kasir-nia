@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 import { DEFAULT_LOW_STOCK_THRESHOLD } from '@/config/limits'
 import { DEFAULT_RECEIPT_SETTINGS } from '@/config/receipt'
-import type { Product, StoreInfo, UserProfile } from '@/domain/types'
+import type { Invite, Member, Product, StoreInfo, UserProfile } from '@/domain/types'
 
 export const roleSchema = z.enum(['owner', 'cashier'])
 
@@ -70,4 +70,29 @@ export function parseProduct(id: string, data: unknown): Product | null {
   if (!result.success) return null
   const { category, barcode, ...rest } = result.data
   return { id, ...rest, category: category ?? null, barcode: barcode ?? null }
+}
+
+const memberDocSchema = z.object({
+  role: roleSchema,
+  displayName: z.string(),
+  email: z.string(),
+  isActive: z.boolean(),
+})
+
+/** Validasi dokumen anggota toko. Null bila data rusak. */
+export function parseMember(uid: string, data: unknown): Member | null {
+  const result = memberDocSchema.safeParse(data)
+  return result.success ? { uid, ...result.data } : null
+}
+
+const inviteDocSchema = z.object({
+  storeId: z.string().min(1),
+  storeName: z.string(),
+  displayName: z.string(),
+})
+
+/** Validasi dokumen undangan (`email` = ID dokumen). Null bila data rusak. */
+export function parseInvite(email: string, data: unknown): Invite | null {
+  const result = inviteDocSchema.safeParse(data)
+  return result.success ? { email, ...result.data } : null
 }

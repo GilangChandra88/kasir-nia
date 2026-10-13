@@ -9,6 +9,7 @@ import { LoginPage } from '@/pages/LoginPage'
 import { ProductFormPage } from '@/pages/ProductFormPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 import { StoreSettingsPage } from '@/pages/StoreSettingsPage'
+import { TeamPage } from '@/pages/TeamPage'
 
 import { AppLayout } from './AppLayout'
 import { SessionGate } from './SessionGate'
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
           { path: ROUTES.inventoryEdit, element: <ProductFormPage /> },
           { path: ROUTES.profile, element: <ProfilePage /> },
           { path: ROUTES.storeSettings, element: <StoreSettingsPage /> },
+          { path: ROUTES.team, element: <TeamPage /> },
         ],
       },
     ],

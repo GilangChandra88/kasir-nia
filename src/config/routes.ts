@@ -9,6 +9,7 @@ export const ROUTES = {
   inventoryEdit: '/stok/:productId',
   profile: '/profil',
   storeSettings: '/profil/toko',
+  team: '/profil/kasir',
 } as const
 
 /** Alamat form ubah barang. */

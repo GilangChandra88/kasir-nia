@@ -93,6 +93,43 @@ service cloud.firestore {
           && next.saleCount > resource.data.saleCount));
     }
 
+    // Akun yang login memakai email undangan ini (email Google terverifikasi).
+    function isInvitee(email) {
+      return signedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email.lower() == email;
+    }
+
+    // Sama dengan MEMBER_NAME_MIN/MAX_LENGTH di src/config/limits.ts.
+    function validMemberName(name) {
+      return name is string && name.size() >= 2 && name.size() <= 30;
+    }
+
+    function inviteDoc(email) {
+      return /databases/$(database)/documents/invites/$(email);
+    }
+
+    // Undangan baru dari pemilik toko (data sama di kedua lokasi undangan).
+    function validInvite(email, storeId) {
+      let data = request.resource.data;
+      return email == email.lower()
+        && data.keys().hasOnly(['storeId', 'storeName', 'displayName', 'invitedBy', 'createdAt'])
+        && data.storeId == storeId
+        && data.invitedBy == request.auth.uid
+        && validMemberName(data.displayName)
+        && data.createdAt == request.time;
+    }
+
+    // Kasir mengklaim undangan: data anggota cocok dengan undangan, dan undangan ikut dihapus.
+    function isClaimingInvite(storeId) {
+      let data = request.resource.data;
+      return data.role == 'cashier'
+        && data.isActive == true
+        && isInvitee(data.email)
+        && get(inviteDoc(data.email)).data.storeId == storeId
+        && !existsAfter(inviteDoc(data.email));
+    }
+
     // Toko yang SEDANG dibuat dalam transaksi yang sama dimiliki akun ini.
     function ownsStoreAfterWrite(storeId) {
       return getAfter(/databases/$(database)/documents/stores/$(storeId)).data.ownerUid
@@ -103,14 +140,28 @@ service cloud.firestore {
     match /users/{uid} {
       allow read: if isSelf(uid);
 
-      // Tahap 1: dibuat bersama toko baru oleh pemiliknya. (Kasir via undangan: Tahap 7.)
+      // Pemilik: dibuat bersama toko barunya. Kasir: dibuat bersama keanggotaan dari undangan.
       allow create: if isSelf(uid)
-        && request.resource.data.role == 'owner'
         && request.resource.data.storeId is string
-        && ownsStoreAfterWrite(request.resource.data.storeId);
+        && ((request.resource.data.role == 'owner'
+            && ownsStoreAfterWrite(request.resource.data.storeId))
+          || (request.resource.data.role == 'cashier'
+            && getAfter(/databases/$(database)/documents/stores/$(request.resource.data.storeId)/members/$(uid)).data.role == 'cashier'));
 
       // Tidak bisa pindah toko atau mengubah peran sendiri.
       allow update, delete: if false;
+    }
+
+    // ---- invites/{email}: penunjuk undangan yang dicari kasir saat login (ID = email) ----
+    match /invites/{email} {
+      // Membaca undangan yang belum ada itu aman (tidak membuka apa pun).
+      allow get: if signedIn()
+        && (resource == null || isInvitee(email) || isOwner(resource.data.storeId));
+      allow create: if signedIn()
+        && isOwner(request.resource.data.storeId)
+        && validInvite(email, request.resource.data.storeId);
+      allow delete: if isInvitee(email) || (signedIn() && isOwner(resource.data.storeId));
+      allow list, update: if false;
     }
 
     // ---- stores/{storeId} ----
@@ -133,14 +184,28 @@ service cloud.firestore {
       match /members/{uid} {
         allow read: if isActiveMember(storeId) && (isSelf(uid) || isOwner(storeId));
 
-        // Anggota pertama = pemilik, ditulis dalam transaksi pembuatan toko.
+        // Pemilik saat membuat toko, atau kasir saat mengklaim undangannya.
         allow create: if isSelf(uid)
-          && request.resource.data.role == 'owner'
-          && request.resource.data.isActive == true
-          && ownsStoreAfterWrite(storeId);
+          && ((request.resource.data.role == 'owner'
+              && request.resource.data.isActive == true
+              && ownsStoreAfterWrite(storeId))
+            || isClaimingInvite(storeId));
 
-        // Tahap 7: pemilik menambah/menonaktifkan kasir.
-        allow update, delete: if false;
+        // Pemilik mengaktifkan/menonaktifkan kasir (bukan dirinya sendiri, peran tak bisa diubah).
+        allow update: if isOwner(storeId)
+          && uid != request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['isActive', 'displayName', 'updatedAt'])
+          && request.resource.data.isActive is bool;
+        allow delete: if false;
+      }
+
+      // ---- invites/{email}: daftar undangan kasir yang dilihat pemilik ----
+      match /invites/{email} {
+        allow read: if isOwner(storeId);
+        allow create: if isOwner(storeId) && validInvite(email, storeId);
+        allow delete: if isOwner(storeId) || isInvitee(email);
+        allow update: if false;
       }
 
       // ---- products/{productId}: pemilik mengubah; kasir hanya mengurangi stok lewat penjualan ----

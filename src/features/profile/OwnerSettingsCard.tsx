@@ -1,6 +1,5 @@
 import { ReceiptText, Users } from 'lucide-react'
 
-import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
 import { SettingRow } from '@/components/ui/SettingRow'
 import { ROUTES } from '@/config/routes'
@@ -21,7 +20,7 @@ export function OwnerSettingsCard() {
           icon={Users}
           label="Kelola kasir"
           description="Tambah kasir lewat email Google"
-          trailing={<Badge tone="muted">Segera</Badge>}
+          to={ROUTES.team}
         />
       </div>
     </Card>

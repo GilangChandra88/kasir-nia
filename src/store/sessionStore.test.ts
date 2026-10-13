@@ -20,6 +20,13 @@ describe('useSessionStore', () => {
       status: 'ready',
       user,
       profile: { storeId: 't1', role: 'owner' },
+      member: {
+        uid: 'u1',
+        role: 'owner',
+        displayName: 'Sari',
+        email: 'sari@contoh.id',
+        isActive: true,
+      },
       store: {
         id: 't1',
         name: 'Toko Nia',

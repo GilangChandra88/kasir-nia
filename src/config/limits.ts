@@ -44,3 +44,7 @@ export const QUICK_PICK_LIMIT = 30
 export const ADDRESS_MAX_LENGTH = 100
 export const PHONE_MAX_LENGTH = 20
 export const RECEIPT_NOTE_MAX_LENGTH = 60
+
+/** Panjang nama panggilan kasir (karakter). Juga dijaga di firestore.rules. */
+export const MEMBER_NAME_MIN_LENGTH = 2
+export const MEMBER_NAME_MAX_LENGTH = 30

@@ -91,7 +91,7 @@ export function CheckoutScreen() {
       >
         <PaymentForm
           storeId={store.id}
-          cashier={{ uid: user.uid, name: user.displayName }}
+          cashier={{ uid: user.uid, name: checkout.member.displayName }}
           entries={checkout.entries}
           total={cart.total}
           itemCount={cart.itemCount}

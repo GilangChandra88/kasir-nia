@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { DEFAULT_LOW_STOCK_THRESHOLD } from '@/config/limits'
 import { DEFAULT_RECEIPT_SETTINGS } from '@/config/receipt'
 
-import { parseProduct, parseStore, parseUserProfile } from './schemas'
+import { parseInvite, parseMember, parseProduct, parseStore, parseUserProfile } from './schemas'
 
 describe('parseUserProfile', () => {
   it('menerima dokumen pengguna yang valid', () => {
@@ -83,5 +83,26 @@ describe('parseProduct', () => {
   it('menolak harga pecahan atau minus', () => {
     const variants = [{ id: 'v1', label: 'x', price: 1.5, baseQty: 1 }]
     expect(parseProduct('p1', { ...doc, variants })).toBeNull()
+  })
+})
+
+describe('parseMember & parseInvite', () => {
+  it('membaca anggota toko beserta uid-nya', () => {
+    const data = { role: 'cashier', displayName: 'Sari', email: 'sari@gmail.com', isActive: true }
+    expect(parseMember('u2', data)).toEqual({ uid: 'u2', ...data })
+  })
+
+  it('menolak anggota tanpa status aktif', () => {
+    expect(parseMember('u2', { role: 'cashier', displayName: 'Sari', email: 'x' })).toBeNull()
+  })
+
+  it('membaca undangan dengan email dari ID dokumen', () => {
+    const data = { storeId: 't1', storeName: 'Toko Nia', displayName: 'Sari', invitedBy: 'u1' }
+    expect(parseInvite('sari@gmail.com', data)).toEqual({
+      email: 'sari@gmail.com',
+      storeId: 't1',
+      storeName: 'Toko Nia',
+      displayName: 'Sari',
+    })
   })
 })

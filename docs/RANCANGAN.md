@@ -163,8 +163,8 @@ pages → features → components → store/data → domain → lib/config/theme
 users/{uid}                          ← pintu masuk setelah login (1 akun = 1 toko)
    storeId, role ("owner" | "cashier"), displayName, email, photoURL
 
-invites/{emailLower}                 ← undangan kasir (dibuat pemilik)
-   storeId, displayName, invitedBy, createdAt
+invites/{emailLower}                 ← penunjuk undangan, dicari kasir saat login (ID = email)
+   storeId, storeName, displayName, invitedBy, createdAt
 
 stores/{storeId}
    ├─ name, address?, phone?, ownerUid, createdAt, lowStockThreshold
@@ -172,6 +172,9 @@ stores/{storeId}
    │
    ├─ members/{uid}                  ← siapa saja yang boleh akses toko ini
    │    role, displayName, email, isActive, joinedAt
+   │
+   ├─ invites/{emailLower}           ← salinan undangan untuk daftar "Kelola Kasir" pemilik
+   │    (isi sama dengan invites/{email}; keduanya ditulis & dihapus dalam satu transaksi)
    │
    ├─ products/{productId}
    │    name, barcode?, category, baseUnit ("batang"), stock, trackStock, isActive,

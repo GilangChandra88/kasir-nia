@@ -24,3 +24,5 @@ Thumbs.db
 # Firebase CLI
 .firebase
 *-debug.log
+firebase-debug.log
+firestore-debug.log

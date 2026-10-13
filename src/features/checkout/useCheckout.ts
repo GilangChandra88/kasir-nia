@@ -17,7 +17,7 @@ const NO_PRODUCTS: Product[] = []
  * ketuk, kamera, atau scanner fisik. Barang berjenis banyak membuka sheet pilih jenis.
  */
 export function useCheckout() {
-  const { user, store } = useReadySession()
+  const { user, store, member } = useReadySession()
   const products = useProducts(store.id)
   const entries = useCartEntries(store.id)
   const showToast = useToastStore((state) => state.show)
@@ -55,6 +55,7 @@ export function useCheckout() {
   return {
     user,
     store,
+    member,
     products,
     catalog,
     entries,

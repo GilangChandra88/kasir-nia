@@ -15,6 +15,24 @@ export type UserProfile = {
   role: Role
 }
 
+/** Anggota toko (dokumen `stores/{id}/members/{uid}`). */
+export type Member = {
+  uid: string
+  role: Role
+  /** Nama panggilan dari pemilik; tampil di struk & riwayat. */
+  displayName: string
+  email: string
+  isActive: boolean
+}
+
+/** Undangan kasir yang belum diklaim (dokumen `invites/{email}`). */
+export type Invite = {
+  email: string
+  storeId: string
+  storeName: string
+  displayName: string
+}
+
 /** Isi tambahan struk yang diatur pemilik di Profil → Toko & Struk. */
 export type ReceiptSettings = {
   /** Baris di bawah alamat, mis. "Buka 07.00–22.00". */
@@ -75,7 +93,7 @@ export type Session =
   | { status: 'loading' }
   | { status: 'signedOut' }
   | { status: 'needsStore'; user: AuthUser }
-  | { status: 'ready'; user: AuthUser; profile: UserProfile; store: StoreInfo }
+  | { status: 'ready'; user: AuthUser; profile: UserProfile; store: StoreInfo; member: Member }
   | { status: 'error'; message: string; user: AuthUser | null }
 
 export type SessionStatus = Session['status']

@@ -25,6 +25,7 @@ npm run dev                  # http://localhost:5180
    npx firebase-tools login
    npm run rules:deploy
    ```
+   Aturan bisa diuji dulu di emulator lokal (butuh Java 21+): `npm run test:rules`.
    (Atau salin isi `firestore.rules` ke Firestore → tab **Rules** → Publish.)
 4. **Authentication → Settings → Authorized domains** → tambahkan domain Vercel
    (mis. `kasir-nia.vercel.app`). Tanpa ini, login Google di situs Vercel akan ditolak.

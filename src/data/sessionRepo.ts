@@ -1,11 +1,13 @@
 import { onAuthStateChanged, type User } from 'firebase/auth'
 import { doc, onSnapshot, type Unsubscribe } from 'firebase/firestore'
 
-import type { AuthUser, Session, UserProfile } from '@/domain/types'
+import { normalizeEmail } from '@/domain/team'
+import type { AuthUser, Member, Session, StoreInfo, UserProfile } from '@/domain/types'
 
 import { describeError, errorCode } from './errors'
 import { auth, db } from './firebase'
-import { parseStore, parseUserProfile } from './schemas'
+import { parseMember, parseStore, parseUserProfile } from './schemas'
+import { claimInvite, findInvite } from './teamRepo'
 
 type Emit = (session: Session) => void
 
@@ -16,7 +18,7 @@ function toAuthUser(user: User): AuthUser {
   return {
     uid: user.uid,
     displayName: user.displayName ?? '',
-    email: user.email ?? '',
+    email: normalizeEmail(user.email ?? ''),
     photoURL: user.photoURL,
   }
 }
@@ -26,37 +28,79 @@ function sessionError(user: AuthUser, error: unknown): Session {
   return { status: 'error', message, user }
 }
 
-/** Langkah 3: pantau dokumen toko; perubahan nama toko langsung terlihat di semua HP. */
-function watchStore(user: AuthUser, profile: UserProfile, emit: Emit): Unsubscribe {
-  return onSnapshot(
+/**
+ * Langkah 3: pantau toko DAN keanggotaan sendiri. Kasir yang dinonaktifkan pemilik langsung
+ * kehilangan akses (dokumen anggotanya berubah → aturan menolak → layar "akses dinonaktifkan").
+ */
+function watchStoreAccess(user: AuthUser, profile: UserProfile, emit: Emit): Unsubscribe {
+  let store: StoreInfo | null = null
+  let member: Member | null = null
+  const fail = (error: unknown) => {
+    emit(sessionError(user, error))
+  }
+  const emitWhenReady = () => {
+    if (store && member) emit({ status: 'ready', user, profile, store, member })
+  }
+
+  const stopStore = onSnapshot(
     doc(db, 'stores', profile.storeId),
     (snapshot) => {
-      const store = parseStore(snapshot.id, snapshot.data())
-      emit(
-        store
-          ? { status: 'ready', user, profile, store }
-          : { status: 'error', message: BROKEN_MESSAGE, user },
-      )
+      store = parseStore(snapshot.id, snapshot.data())
+      if (store) emitWhenReady()
+      else emit({ status: 'error', message: BROKEN_MESSAGE, user })
     },
-    (error) => {
-      emit(sessionError(user, error))
-    },
+    fail,
   )
+  const stopMember = onSnapshot(
+    doc(db, 'stores', profile.storeId, 'members', user.uid),
+    (snapshot) => {
+      member = parseMember(snapshot.id, snapshot.data())
+      if (member?.isActive) emitWhenReady()
+      else emit({ status: 'error', message: BLOCKED_MESSAGE, user })
+    },
+    fail,
+  )
+  return () => {
+    stopStore()
+    stopMember()
+  }
 }
 
-/** Langkah 2: cari toko milik akun lewat `users/{uid}`. Tidak ada → akun baru, perlu buat toko. */
+/** Akun tanpa toko: bila emailnya diundang, otomatis jadi kasir; bila tidak, buat toko sendiri. */
+async function joinByInvite(user: AuthUser, emit: Emit, isStopped: () => boolean) {
+  try {
+    const invite = await findInvite(user.email)
+    if (isStopped()) return
+    if (!invite) {
+      emit({ status: 'needsStore', user })
+      return
+    }
+    // Berhasil → dokumen users/{uid} muncul → pemantau profil melanjutkan ke toko.
+    await claimInvite(user, invite)
+  } catch (error) {
+    if (!isStopped()) emit(sessionError(user, error))
+  }
+}
+
+/** Langkah 2: cari toko milik akun lewat `users/{uid}`. */
 function watchProfile(user: AuthUser, emit: Emit): Unsubscribe {
-  let stopStore: Unsubscribe | undefined
+  let stopAccess: Unsubscribe | undefined
+  let stopped = false
+  let joining = false
 
   const stopProfile = onSnapshot(
     doc(db, 'users', user.uid),
     (snapshot) => {
-      stopStore?.()
-      stopStore = undefined
+      stopAccess?.()
+      stopAccess = undefined
 
       if (!snapshot.exists()) {
         // Dari cache saat offline, "tidak ada" belum tentu benar → tunggu jawaban server.
-        emit(snapshot.metadata.fromCache ? { status: 'loading' } : { status: 'needsStore', user })
+        if (snapshot.metadata.fromCache || joining) return
+        joining = true
+        void joinByInvite(user, emit, () => stopped).finally(() => {
+          joining = false
+        })
         return
       }
       const profile = parseUserProfile(snapshot.data())
@@ -64,7 +108,7 @@ function watchProfile(user: AuthUser, emit: Emit): Unsubscribe {
         emit({ status: 'error', message: BROKEN_MESSAGE, user })
         return
       }
-      stopStore = watchStore(user, profile, emit)
+      stopAccess = watchStoreAccess(user, profile, emit)
     },
     (error) => {
       emit(sessionError(user, error))
@@ -72,14 +116,15 @@ function watchProfile(user: AuthUser, emit: Emit): Unsubscribe {
   )
 
   return () => {
-    stopStore?.()
+    stopped = true
+    stopAccess?.()
     stopProfile()
   }
 }
 
 /**
- * Memantau sesi: akun Google → profil (`users/{uid}`) → toko. Setiap perubahan dikirim ke `emit`.
- * Mengembalikan fungsi untuk berhenti memantau.
+ * Memantau sesi: akun Google → profil (`users/{uid}`) → toko & keanggotaan.
+ * Setiap perubahan dikirim ke `emit`. Mengembalikan fungsi untuk berhenti memantau.
  */
 export function watchSession(emit: Emit): Unsubscribe {
   let stopProfile: Unsubscribe | undefined
