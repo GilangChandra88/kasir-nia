@@ -4,6 +4,7 @@ import { type ReactNode, useId, useRef } from 'react'
 import { createPortal } from 'react-dom'
 
 import { SHEET_DISMISS_OFFSET_PX, SHEET_DISMISS_VELOCITY, SPRING } from '@/config/motion'
+import { cn } from '@/lib/cn'
 
 import { useModalBehavior } from './useModalBehavior'
 
@@ -13,13 +14,15 @@ type SheetProps = {
   title: string
   description?: string
   children: ReactNode
+  /** Tampil di atas layar penuh lain (mis. struk di atas layar sukses). */
+  elevated?: boolean
 }
 
 /**
  * Bottom sheet ala aplikasi: naik dengan pegas, latar redup, bisa ditarik turun untuk menutup.
  * Di layar lebar tampil sebagai dialog di tengah.
  */
-export function Sheet({ open, onClose, title, description, children }: SheetProps) {
+export function Sheet({ open, onClose, title, description, children, elevated }: SheetProps) {
   const titleId = useId()
   const panelRef = useRef<HTMLDivElement>(null)
   useModalBehavior(open, onClose, panelRef)
@@ -35,7 +38,10 @@ export function Sheet({ open, onClose, title, description, children }: SheetProp
       {open && (
         <div
           key="sheet"
-          className="fixed inset-0 z-50 flex items-end justify-center md:items-center"
+          className={cn(
+            'fixed inset-0 flex items-end justify-center md:items-center',
+            elevated ? 'z-[80]' : 'z-50',
+          )}
         >
           <m.div
             className="absolute inset-0 bg-navy-950/40"

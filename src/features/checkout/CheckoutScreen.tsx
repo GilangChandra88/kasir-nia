@@ -109,6 +109,7 @@ export function CheckoutScreen() {
             <SaleSuccess
               key={sale.saleId}
               sale={sale}
+              store={store}
               onDone={() => {
                 setSale(null)
               }}

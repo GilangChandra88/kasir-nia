@@ -33,6 +33,21 @@ service cloud.firestore {
       return name is string && name.size() >= 2 && name.size() <= 40;
     }
 
+    function optionalText(value, max) {
+      return value == null || (value is string && value.size() <= max);
+    }
+
+    // Info toko & struk. Sama dengan batas di src/config/limits.ts.
+    function validStoreProfile(data) {
+      return validStoreName(data.name)
+        && optionalText(data.address, 100)
+        && optionalText(data.phone, 20)
+        && data.lowStockThreshold is int && data.lowStockThreshold >= 0
+        && optionalText(data.receipt.headerNote, 60)
+        && data.receipt.footerNote is string && data.receipt.footerNote.size() <= 60
+        && data.receipt.showCashier is bool;
+    }
+
     // Sama dengan batas di src/config/limits.ts (nama barang, satuan, jumlah jenis).
     function validProduct(data) {
       return data.name is string && data.name.size() >= 2 && data.name.size() <= 60
@@ -110,7 +125,7 @@ service cloud.firestore {
 
       allow update: if isOwner(storeId)
         && request.resource.data.ownerUid == resource.data.ownerUid
-        && validStoreName(request.resource.data.name);
+        && validStoreProfile(request.resource.data);
 
       allow delete: if false;
 

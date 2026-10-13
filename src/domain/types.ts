@@ -15,6 +15,15 @@ export type UserProfile = {
   role: Role
 }
 
+/** Isi tambahan struk yang diatur pemilik di Profil → Toko & Struk. */
+export type ReceiptSettings = {
+  /** Baris di bawah alamat, mis. "Buka 07.00–22.00". */
+  headerNote: string | null
+  /** Penutup struk, mis. "Terima kasih, datang lagi!". */
+  footerNote: string
+  showCashier: boolean
+}
+
 /** Info toko yang ditampilkan di aplikasi & struk. */
 export type StoreInfo = {
   id: string
@@ -24,6 +33,7 @@ export type StoreInfo = {
   phone: string | null
   /** Stok di bawah atau sama dengan angka ini (satuan dasar) ditandai "menipis". */
   lowStockThreshold: number
+  receipt: ReceiptSettings
 }
 
 /**

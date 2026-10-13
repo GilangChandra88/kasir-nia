@@ -1,5 +1,6 @@
-import { Plus } from 'lucide-react'
+import { Plus, ReceiptText } from 'lucide-react'
 import * as m from 'motion/react-m'
+import { useState } from 'react'
 
 import { SuccessCheck } from '@/components/brand/SuccessCheck'
 import { Confetti } from '@/components/motion/Confetti'
@@ -7,14 +8,21 @@ import { fadeUpItem, staggerContainer } from '@/components/motion/variants'
 import { Button } from '@/components/ui/Button'
 import type { RecordedSale } from '@/data/saleRepo'
 import { formatRupiah } from '@/domain/money'
+import { buildReceipt } from '@/domain/receipt'
+import type { StoreInfo } from '@/domain/types'
+import { ReceiptSheet } from '@/features/receipt/ReceiptSheet'
 
 type SaleSuccessProps = {
   sale: RecordedSale
+  store: StoreInfo
   onDone: () => void
 }
 
 /** Layar penuh setelah transaksi tersimpan. Kembalian ditampilkan paling besar untuk kasir. */
-export function SaleSuccess({ sale, onDone }: SaleSuccessProps) {
+export function SaleSuccess({ sale, store, onDone }: SaleSuccessProps) {
+  const [showReceipt, setShowReceipt] = useState(false)
+  const receipt = buildReceipt(store, { ...sale, date: sale.savedAt })
+
   return (
     <m.div
       role="dialog"
@@ -58,10 +66,30 @@ export function SaleSuccess({ sale, onDone }: SaleSuccessProps) {
         </m.div>
       </m.div>
 
-      <Button size="lg" fullWidth className="mx-auto max-w-sm" onClick={onDone} autoFocus>
-        <Plus className="size-5" aria-hidden="true" />
-        Transaksi baru
-      </Button>
+      <div className="mx-auto flex w-full max-w-sm flex-col gap-2">
+        <Button
+          variant="secondary"
+          size="lg"
+          fullWidth
+          onClick={() => {
+            setShowReceipt(true)
+          }}
+        >
+          <ReceiptText className="size-5" aria-hidden="true" />
+          Lihat struk
+        </Button>
+        <Button size="lg" fullWidth onClick={onDone} autoFocus>
+          <Plus className="size-5" aria-hidden="true" />
+          Transaksi baru
+        </Button>
+      </div>
+      <ReceiptSheet
+        receipt={receipt}
+        open={showReceipt}
+        onClose={() => {
+          setShowReceipt(false)
+        }}
+      />
     </m.div>
   )
 }

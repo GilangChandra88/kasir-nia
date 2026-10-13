@@ -14,6 +14,7 @@ export type RecordedSale = {
   receiptNo: string
   /** Waktu di HP saat disimpan (waktu resmi di server: `createdAt`). */
   savedAt: Date
+  cashierName: string
   items: SaleItem[]
   total: number
   itemCount: number
@@ -84,5 +85,5 @@ export async function recordSale({
     return summary
   })
 
-  return { ...sale, saleId: saleRef.id, receiptNo, savedAt }
+  return { ...sale, saleId: saleRef.id, receiptNo, savedAt, cashierName: cashier.name }
 }

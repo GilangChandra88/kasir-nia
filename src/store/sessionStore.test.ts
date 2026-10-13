@@ -27,6 +27,7 @@ describe('useSessionStore', () => {
         address: null,
         phone: null,
         lowStockThreshold: 5,
+        receipt: { headerNote: null, footerNote: 'Terima kasih', showCashier: true },
       },
     }
     useSessionStore.getState().setSession(ready)

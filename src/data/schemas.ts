@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 import { DEFAULT_LOW_STOCK_THRESHOLD } from '@/config/limits'
+import { DEFAULT_RECEIPT_SETTINGS } from '@/config/receipt'
 import type { Product, StoreInfo, UserProfile } from '@/domain/types'
 
 export const roleSchema = z.enum(['owner', 'cashier'])
@@ -18,6 +19,14 @@ export const storeDocSchema = z.object({
   address: z.string().nullish(),
   phone: z.string().nullish(),
   lowStockThreshold: z.number().int().min(0).catch(DEFAULT_LOW_STOCK_THRESHOLD),
+  // Pengaturan struk rusak/tidak ada → pakai bawaan, jangan sampai toko gagal dibuka.
+  receipt: z
+    .object({
+      headerNote: z.string().nullable().catch(null),
+      footerNote: z.string().catch(DEFAULT_RECEIPT_SETTINGS.footerNote),
+      showCashier: z.boolean().catch(DEFAULT_RECEIPT_SETTINGS.showCashier),
+    })
+    .catch({ ...DEFAULT_RECEIPT_SETTINGS }),
 })
 
 const nonNegativeInt = z.number().int().min(0)

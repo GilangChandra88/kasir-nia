@@ -14,6 +14,7 @@ import {
 import { formatNumber } from './money'
 import type { ProductDraft, VariantDraft } from './productDraft'
 import type { ProductInput, Variant } from './types'
+import { definedOnly } from './validation'
 
 export type VariantErrors = Partial<Record<'label' | 'price' | 'baseQty', string>>
 
@@ -58,18 +59,6 @@ function integerError(value: number | null, label: string, min: number, max: num
   if (!Number.isInteger(value) || value < min) return `${label} minimal ${formatNumber(min)}.`
   if (value > max) return `${label} maksimal ${formatNumber(max)}.`
   return undefined
-}
-
-/** Hanya menyisakan isian yang benar-benar bergalat. */
-function definedOnly<K extends string>(
-  checks: Record<K, string | undefined>,
-): Partial<Record<K, string>> {
-  const result: Partial<Record<K, string>> = {}
-  for (const key of Object.keys(checks) as K[]) {
-    const message = checks[key]
-    if (message !== undefined) result[key] = message
-  }
-  return result
 }
 
 function variantErrors(variant: VariantDraft, duplicateLabels: Set<string>): VariantErrors {

@@ -39,3 +39,8 @@ export const MAX_SALE_LINES = 100
 
 /** Barang yang tampil sebagai pilihan cepat di Kasir saat kolom cari kosong. */
 export const QUICK_PICK_LIMIT = 30
+
+/** Panjang info toko & catatan struk (karakter). Juga dijaga di firestore.rules. */
+export const ADDRESS_MAX_LENGTH = 100
+export const PHONE_MAX_LENGTH = 20
+export const RECEIPT_NOTE_MAX_LENGTH = 60

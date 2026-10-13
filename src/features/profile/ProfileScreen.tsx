@@ -5,10 +5,10 @@ import { fadeUpItem, staggerContainer } from '@/components/motion/variants'
 import { useReadySession } from '@/features/auth/useReadySession'
 
 import { AccountCard } from './AccountCard'
+import { OwnerSettingsCard } from './OwnerSettingsCard'
 import { ScanFeedbackCard } from './ScanFeedbackCard'
 import { SignOutButton } from './SignOutButton'
 import { StoreCard } from './StoreCard'
-import { UpcomingSettingsCard } from './UpcomingSettingsCard'
 
 export function ProfileScreen() {
   const { user, profile, store } = useReadySession()
@@ -31,9 +31,11 @@ export function ProfileScreen() {
         <m.div variants={fadeUpItem}>
           <ScanFeedbackCard />
         </m.div>
-        <m.div variants={fadeUpItem}>
-          <UpcomingSettingsCard role={profile.role} />
-        </m.div>
+        {profile.role === 'owner' && (
+          <m.div variants={fadeUpItem}>
+            <OwnerSettingsCard />
+          </m.div>
+        )}
         <m.div variants={fadeUpItem} className="pt-2">
           <SignOutButton />
           <p className="mt-4 text-center text-xs text-muted">Nia Kasir versi {__APP_VERSION__}</p>

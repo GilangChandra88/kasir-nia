@@ -3,6 +3,7 @@ import { collection, doc, serverTimestamp } from 'firebase/firestore'
 import { DEFAULT_LOW_STOCK_THRESHOLD } from '@/config/limits'
 import { DEFAULT_RECEIPT_SETTINGS } from '@/config/receipt'
 import { UserFacingError } from '@/domain/errors'
+import type { StoreProfileInput } from '@/domain/storeProfile'
 import type { AuthUser } from '@/domain/types'
 
 import { db } from './firebase'
@@ -47,5 +48,13 @@ export async function createStore(user: AuthUser, name: string): Promise<void> {
       email: user.email,
       createdAt: serverTimestamp(),
     })
+  })
+}
+
+/** Menyimpan info toko & pengaturan struk (khusus pemilik). Wajib online. */
+export async function updateStoreProfile(storeId: string, input: StoreProfileInput): Promise<void> {
+  await runTimedTransaction((tx) => {
+    tx.update(doc(db, 'stores', storeId), { ...input, updatedAt: serverTimestamp() })
+    return Promise.resolve()
   })
 }

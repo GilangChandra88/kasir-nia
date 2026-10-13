@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { DEFAULT_LOW_STOCK_THRESHOLD } from '@/config/limits'
+import { DEFAULT_RECEIPT_SETTINGS } from '@/config/receipt'
 
 import { parseProduct, parseStore, parseUserProfile } from './schemas'
 
@@ -30,6 +31,7 @@ describe('parseStore', () => {
       address: null,
       phone: null,
       lowStockThreshold: DEFAULT_LOW_STOCK_THRESHOLD,
+      receipt: DEFAULT_RECEIPT_SETTINGS,
     })
   })
 
@@ -37,6 +39,11 @@ describe('parseStore', () => {
     expect(parseStore('t', { name: 'Toko', ownerUid: 'u1', lowStockThreshold: 10 })).toMatchObject({
       lowStockThreshold: 10,
     })
+  })
+
+  it('memakai pengaturan struk yang tersimpan', () => {
+    const receipt = { headerNote: 'Buka 07.00', footerNote: 'Makasih!', showCashier: false }
+    expect(parseStore('t', { name: 'Toko', ownerUid: 'u1', receipt })?.receipt).toEqual(receipt)
   })
 
   it('menolak toko tanpa nama', () => {
