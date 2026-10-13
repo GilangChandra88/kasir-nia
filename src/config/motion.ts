@@ -24,3 +24,6 @@ export const ONLINE_NOTICE_MS = 2500
 /** Bottom sheet ditutup bila ditarik turun sejauh ini (piksel) atau secepat ini (piksel/detik). */
 export const SHEET_DISMISS_OFFSET_PX = 120
 export const SHEET_DISMISS_VELOCITY = 600
+
+/** Lama toast tampil sebelum hilang sendiri (milidetik). */
+export const TOAST_DURATION_MS = 2800

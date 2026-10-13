@@ -1,12 +1,12 @@
-import { collection, doc, runTransaction, serverTimestamp } from 'firebase/firestore'
+import { collection, doc, serverTimestamp } from 'firebase/firestore'
 
-import { DEFAULT_LOW_STOCK_THRESHOLD, SAVE_TIMEOUT_MS } from '@/config/limits'
+import { DEFAULT_LOW_STOCK_THRESHOLD } from '@/config/limits'
 import { DEFAULT_RECEIPT_SETTINGS } from '@/config/receipt'
 import { UserFacingError } from '@/domain/errors'
 import type { AuthUser } from '@/domain/types'
-import { withTimeout } from '@/lib/withTimeout'
 
 import { db } from './firebase'
+import { runTimedTransaction } from './transaction'
 
 /**
  * Membuat toko baru dengan `user` sebagai pemilik. Toko, keanggotaan, dan `users/{uid}` ditulis
@@ -18,7 +18,7 @@ export async function createStore(user: AuthUser, name: string): Promise<void> {
   const memberRef = doc(db, 'stores', storeRef.id, 'members', user.uid)
   const userRef = doc(db, 'users', user.uid)
 
-  const transaction = runTransaction(db, async (tx) => {
+  await runTimedTransaction(async (tx) => {
     // Aturan 1 akun = 1 toko (juga dijaga firestore.rules).
     if ((await tx.get(userRef)).exists()) {
       throw new UserFacingError('Akun ini sudah terdaftar di sebuah toko.')
@@ -48,10 +48,4 @@ export async function createStore(user: AuthUser, name: string): Promise<void> {
       createdAt: serverTimestamp(),
     })
   })
-
-  await withTimeout(
-    transaction,
-    SAVE_TIMEOUT_MS,
-    new UserFacingError('Gagal menyimpan karena koneksi lambat. Coba lagi.'),
-  )
 }

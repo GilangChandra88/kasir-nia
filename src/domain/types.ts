@@ -22,7 +22,39 @@ export type StoreInfo = {
   ownerUid: string
   address: string | null
   phone: string | null
+  /** Stok di bawah atau sama dengan angka ini (satuan dasar) ditandai "menipis". */
+  lowStockThreshold: number
 }
+
+/**
+ * Jenis jual sebuah barang, mis. "1 bungkus" (isi 20 batang) atau "1 batang" (isi 1).
+ * `price` dalam rupiah (integer), `baseQty` = berapa satuan dasar yang terpakai per 1 jenis ini.
+ */
+export type Variant = {
+  id: string
+  label: string
+  price: number
+  baseQty: number
+}
+
+/** Barang di stok. `stock` selalu dalam satuan dasar (`baseUnit`), mis. batang. */
+export type Product = {
+  id: string
+  name: string
+  category: string | null
+  baseUnit: string
+  barcode: string | null
+  stock: number
+  trackStock: boolean
+  isActive: boolean
+  variants: Variant[]
+}
+
+/** Data barang yang sudah divalidasi dan siap disimpan (tanpa id & stok). */
+export type ProductInput = Pick<
+  Product,
+  'name' | 'category' | 'baseUnit' | 'barcode' | 'trackStock' | 'variants'
+>
 
 /**
  * Status sesi aplikasi. Setiap status punya tepat satu tujuan halaman (lihat `app/sessionRoutes.ts`).

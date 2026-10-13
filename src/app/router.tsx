@@ -7,6 +7,7 @@ import { CreateStorePage } from '@/pages/CreateStorePage'
 import { HistoryPage } from '@/pages/HistoryPage'
 import { InventoryPage } from '@/pages/InventoryPage'
 import { LoginPage } from '@/pages/LoginPage'
+import { ProductFormPage } from '@/pages/ProductFormPage'
 import { ProfilePage } from '@/pages/ProfilePage'
 
 import { NAV_ITEMS } from './navigation'
@@ -31,6 +32,8 @@ export const router = createBrowserRouter([
           { path: ROUTES.checkout, element: <CheckoutPage /> },
           { path: ROUTES.history, element: <HistoryPage /> },
           { path: ROUTES.inventory, element: <InventoryPage /> },
+          { path: ROUTES.inventoryNew, element: <ProductFormPage /> },
+          { path: ROUTES.inventoryEdit, element: <ProductFormPage /> },
           { path: ROUTES.profile, element: <ProfilePage /> },
         ],
       },

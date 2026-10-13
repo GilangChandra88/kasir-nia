@@ -20,7 +20,14 @@ describe('useSessionStore', () => {
       status: 'ready',
       user,
       profile: { storeId: 't1', role: 'owner' },
-      store: { id: 't1', name: 'Toko Nia', ownerUid: 'u1', address: null, phone: null },
+      store: {
+        id: 't1',
+        name: 'Toko Nia',
+        ownerUid: 'u1',
+        address: null,
+        phone: null,
+        lowStockThreshold: 5,
+      },
     }
     useSessionStore.getState().setSession(ready)
     expect(useSessionStore.getState().session).toEqual(ready)

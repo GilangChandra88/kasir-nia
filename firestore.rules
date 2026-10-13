@@ -33,6 +33,17 @@ service cloud.firestore {
       return name is string && name.size() >= 2 && name.size() <= 40;
     }
 
+    // Sama dengan batas di src/config/limits.ts (nama barang, satuan, jumlah jenis).
+    function validProduct(data) {
+      return data.name is string && data.name.size() >= 2 && data.name.size() <= 60
+        && data.baseUnit is string && data.baseUnit.size() >= 1 && data.baseUnit.size() <= 20
+        && (data.barcode == null || data.barcode is string)
+        && data.stock is int && data.stock >= 0
+        && data.trackStock is bool
+        && data.isActive is bool
+        && data.variants is list && data.variants.size() >= 1 && data.variants.size() <= 10;
+    }
+
     // Toko yang SEDANG dibuat dalam transaksi yang sama dimiliki akun ini.
     function ownsStoreAfterWrite(storeId) {
       return getAfter(/databases/$(database)/documents/stores/$(storeId)).data.ownerUid
@@ -81,6 +92,23 @@ service cloud.firestore {
 
         // Tahap 7: pemilik menambah/menonaktifkan kasir.
         allow update, delete: if false;
+      }
+
+      // ---- products/{productId}: hanya pemilik yang mengubah; tidak pernah dihapus ----
+      match /products/{productId} {
+        allow read: if isActiveMember(storeId);
+        allow create, update: if isOwner(storeId) && validProduct(request.resource.data);
+        allow delete: if false;
+      }
+
+      // ---- barcodes/{barcode}: ID = barcode, menjamin satu barcode untuk satu barang ----
+      match /barcodes/{barcode} {
+        allow read: if isActiveMember(storeId);
+        // Penunjuk harus cocok dengan barang yang memakai barcode ini setelah penulisan.
+        allow create, update: if isOwner(storeId)
+          && request.resource.data.keys().hasOnly(['productId'])
+          && getAfter(/databases/$(database)/documents/stores/$(storeId)/products/$(request.resource.data.productId)).data.barcode == barcode;
+        allow delete: if isOwner(storeId);
       }
     }
   }

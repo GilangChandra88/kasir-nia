@@ -2,6 +2,7 @@ import { LazyMotion, MotionConfig } from 'motion/react'
 import { RouterProvider } from 'react-router'
 
 import { useSessionSync } from '@/features/auth/useSessionSync'
+import { Toaster } from '@/features/shared/Toaster'
 
 import { router } from './router'
 
@@ -17,6 +18,7 @@ export function App() {
     <LazyMotion features={loadMotionFeatures} strict>
       <MotionConfig reducedMotion="user">
         <RouterProvider router={router} />
+        <Toaster />
       </MotionConfig>
     </LazyMotion>
   )

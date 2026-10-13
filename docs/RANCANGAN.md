@@ -174,8 +174,8 @@ stores/{storeId}
    │    role, displayName, email, isActive, joinedAt
    │
    ├─ products/{productId}
-   │    name, nameLower, barcode?, category, baseUnit ("batang"), stock, trackStock, isActive,
-   │    variants: [ { id, label: "1 bungkus", price (rupiah), baseQty, barcode? } ],
+   │    name, barcode?, category, baseUnit ("batang"), stock, trackStock, isActive,
+   │    variants: [ { id, label: "1 bungkus", price (rupiah), baseQty } ],     ← barcode per jenis: lanjutan
    │    createdAt, updatedAt
    │
    ├─ barcodes/{barcode}             ← menjamin barcode unik per toko, pencarian scan = 1 baca
@@ -276,7 +276,8 @@ Aplikasi sengaja **tidak** mendukung transaksi tanpa sinyal, supaya stok dan riw
 - **Form barang**: nama, kategori, satuan dasar, stok awal, barcode, lacak stok.
 - **Editor jenis**: baris `label · harga · isi (baseQty)`; minimal satu. Template cepat "Bungkus + eceran".
 - **Registrasi barcode** memakai scanner yang sama; barcode ganda → peringatan menyebut barang pemiliknya.
-- **Penyesuaian stok** cepat (stok masuk / koreksi).
+- **Penyesuaian stok**: "Stok masuk" (bisa per bungkus, dikali isinya) atau "Koreksi" (hasil hitung rak),
+  dihitung dari stok terbaru di server agar tidak menimpa penjualan.
 
 ## 11. Struk (tampil di layar)
 
@@ -411,8 +412,8 @@ Sentuhan "lucu" murah: maskot/ikon SVG sederhana di status kosong & layar sukses
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
 | 0     | Setup: Vite+TS, Tailwind, ESLint/Prettier/Vitest, struktur folder, token navy, font, PWA dasar                                                                                                                                  | Halaman sambutan navy + `npm run check` lulus        |
 | 1     | Firebase (Auth Google, Firestore, `.env`, `firestore.rules`), Vercel (`vercel.json`), `users`/`members`, onboarding buat toko, penjaga rute, `AppShell` + `BottomNav` 4 tab, Profil dasar (kartu akun, keluar), `OfflineBanner` | Login, buat toko, pindah 4 tab, keluar               |
-| 2     | **Stok**: `domain` (money/types/permissions), skema Zod, `productRepo`, daftar & form barang, editor jenis                                                                                                                      | Tambah barang + jenis tersimpan                      |
-| 3     | **Scanner**: `BarcodeScanner` (kamera), hook scanner fisik, registrasi barcode di form stok                                                                                                                                     | Scan barcode ke form, deteksi duplikat               |
+| 2     | **Stok**: `domain` (money/types/permissions), skema Zod, `productRepo`, daftar & form barang, editor jenis, barcode unik (ketik/scanner fisik), atur stok                                                                       | Tambah barang + jenis tersimpan                      |
+| 3     | **Scanner**: `BarcodeScanner` (kamera), hook scanner fisik, tombol scan di form stok                                                                                                                                            | Scan barcode ke form, deteksi duplikat               |
 | 4     | **Kasir**: pencarian, sheet pilih jenis, keranjang, total, alur bayar tunai, blokir saat offline                                                                                                                                | Transaksi lengkap di layar                           |
 | 5     | **Simpan transaksi**: `saleRepo` atomik, kurangi stok, `dailyStats`, animasi sukses, penanganan gagal                                                                                                                           | Transaksi tersimpan, stok berkurang                  |
 | 6     | **Struk**: `domain/receipt`, `ReceiptSheet`, pengaturan struk + pratinjau di Profil                                                                                                                                             | Struk muncul setelah bayar                           |
